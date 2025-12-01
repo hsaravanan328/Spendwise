@@ -89,8 +89,33 @@ Your app is now live!
 
 📐 **Architecture Diagram**
 ===========================
-https://github.com/hsaravanan328/Spendwise/blob/main/Gemini_Generated_Image_9u20fv9u20fv9u20.png
-Your app will be **live, stable, fast**, and **Gemini-powered**.
+
+                    +-------------------+
+                    |   User Interface  |
+                    |   (Streamlit UI)  |
+                    +---------+---------+
+                              |
+                              v
+                   +----------------------+
+                   |      App Router      |
+                   | (app.py + pages/)    |
+                   +----------+-----------+
+                              |
+         ------------------------------------------------
+         |                     |                      |
+         v                     v                      v
++----------------+   +--------------------+   +---------------------+
+|  Data Layer    |   |  AI Processing    |   | Visualization Layer |
+| (loader.py,    |   | (analyzer.py,     |   | (Plotly charts,     |
+|  data_cleaning)|   |  coach.py,        |   |  tables, heatmaps)  |
++--------+-------+   |  categorizer.py)  |   +----------+----------+
+         |           +---------+----------+              |
+         |                     |                         |
+         |                     v                         |
+         |            Google Gemini API                  |
+         |          HuggingFace Transformers             |
+         -------------------------------------------------
+
 
 ✅ **HOW TO DEPLOY YOUR APP ON STREAMLIT CLOUD (Step-by-Step)**
 ==============================================================
@@ -186,6 +211,7 @@ If you don’t need HuggingFace:
 - **Delpoyed Site**: https://spendwise-agent.streamlit.app/
 - **Kaggle Code**: https://www.kaggle.com/code/hsaravan/spendwise-your-spending-assistant
 - **YouTube Video**: https://github.com/hsaravanan328/Spendwise/tree/main
+
 
 
 
