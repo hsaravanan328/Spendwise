@@ -1,4 +1,4 @@
-
+## **SPENDWISE**
 SpendWise is a personal spending assistant that helps users analyze transactions, track budgets, categorize expenses, visualize spending, and get AI-powered financial coaching.
 
 Built with:
@@ -44,14 +44,14 @@ Analyze transaction descriptions or user-entered text sentiment using HuggingFac
 
 Ask questions like:
 
-> “Why did I spend so much this week?”“Am I overspending on food?”
+> “Why did I spend so much this week?”
+> “Am I overspending on food?”
 
 AI responds with actionable, supportive financial coaching.
 
 🗂️ Folder Structure
 ====================
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   spendwisee/  ├── app.py  ├── pages/  │   ├── Ask_SpendWise.py  │   ├── Budget_Planner.py  │   ├── Spending_Insights.py  │   ├── Sentiment_Analysis.py  │   ├── Category_Dashboard.py  │  ├── utils/  │   ├── loader.py  │   ├── data_cleaning.py  │   ├── config.py  │   ├── categorizer.py  │   ├── analyzer.py  │   ├── coach.py  │  ├── data/  │   ├── raw_chase.csv  │   ├── cleaned.csv  │  ├── requirements.txt  └── README.md   `
 
 🌐 Deployment (Streamlit Cloud)
 ===============================
@@ -64,8 +64,12 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
 
 Choose your repo and set:
 
-your GitHub repo
-BranchmainApp fileapp.py
+| Setting  | Value            |
+| -------- | ---------------- |
+| Repo     | your GitHub repo |
+| Branch   | main             |
+| App file | app.py           |
+
 
 ### **3\. Add your API key**
 
@@ -99,12 +103,10 @@ You **must NOT** commit .env.Instead, you will set your API key inside Streamlit
 ============================================
 
 In VSCode terminal:
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   git add .  git commit -m "final spendwise app"  git push origin main   `
+`   git add .  git commit -m "final spendwise app"  git push origin main   `
 
 If you see “no upstream branch” error:
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   git push --set-upstream origin main   `
+`   git push --set-upstream origin main   `
 
 Done.
 
@@ -159,3 +161,4 @@ If you don’t need HuggingFace:
 ❗ remove transformers + torch to make deployment faster.
 
 ==============================================================
+
