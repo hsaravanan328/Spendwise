@@ -221,7 +221,8 @@ If you don’t need HuggingFace:
 ===============================
 - **Delpoyed Site**: https://spendwise-agent.streamlit.app/
 - **Kaggle Code**: https://www.kaggle.com/code/hsaravan/spendwise-your-spending-assistant
-- **YouTube Video**: https://github.com/hsaravanan328/Spendwise/tree/main
+- **YouTube Video**: [https://github.com/hsaravanan328/Spendwise/tree/main](https://youtu.be/zikdS2loaoA)
+
 
 
 
