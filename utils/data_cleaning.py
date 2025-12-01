@@ -1,3 +1,13 @@
+import pandas as pd
+import re
+import json
+import google.generativeai as genai
+from utils.config import MODEL_NAME
+import streamlit as st
+
+# ----------------------------------------------------
+# CLEAN RAW CHASE CSV
+# ----------------------------------------------------
 @st.cache_data(show_spinner=False)
 def clean_data():
     df = pd.read_csv("data/raw_chase.csv")
@@ -26,4 +36,51 @@ def clean_data():
     # Otherwise just save without category
     df["Category"] = "Other"
     df.to_csv("data/cleaned.csv", index=False)
+    return df
+
+
+# ----------------------------------------------------
+# AI BATCH CATEGORIZATION
+# ----------------------------------------------------
+def ai_batch_categorize(df):
+    """Use Gemini to batch-categorize descriptions into known categories."""
+    model = genai.GenerativeModel(MODEL_NAME)
+
+    descriptions = df["Description"].tolist()
+
+    prompt = f"""
+Return a JSON array where each item is the category for the matching transaction.
+
+Valid categories:
+["Groceries","Dining","Coffee","Shopping","Transport","Travel","Health",
+"Entertainment","Bills","Utilities","Education","Subscriptions","Income","Other"]
+
+Descriptions:
+{descriptions}
+
+Respond ONLY with JSON. No explanation.
+"""
+
+    resp = model.generate_content(prompt)
+    raw = resp.text.strip()
+
+    # -------- Clean the AI output --------
+    raw = raw.replace("```json", "")
+    raw = raw.replace("```", "")
+    raw = raw.strip()
+
+    try:
+        categories = json.loads(raw)
+    except Exception:
+        raise ValueError(
+            f"❌ Gemini returned invalid JSON:\n\n{raw}"
+        )
+
+    if len(categories) != len(df):
+        raise ValueError(
+            f"❌ AI returned {len(categories)} categories for {len(df)} rows.\n"
+            f"Output:\n{categories}"
+        )
+
+    df["Category"] = categories
     return df
