@@ -181,11 +181,12 @@ If you don’t need HuggingFace:
 
 ❗ remove transformers + torch to make deployment faster.
 
-===============================
 **6\. LINKS**
+===============================
 - **Delpoyed Site**: https://spendwise-agent.streamlit.app/
 - **Kaggle Code**: https://www.kaggle.com/code/hsaravan/spendwise-your-spending-assistant
 - **YouTube Video**: https://github.com/hsaravanan328/Spendwise/tree/main
+
 
 
 
