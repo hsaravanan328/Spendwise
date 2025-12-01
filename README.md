@@ -58,7 +58,11 @@ AI responds with actionable, supportive financial coaching.
 
 ### **1\. Push to GitHub**
 
-`   git add .  git commit -m "final version"  git push   `
+`
+git add .  
+git commit -m "final version"  
+git push
+`
 
 ### **2\. Go to Streamlit Cloud → New App**
 
@@ -75,7 +79,7 @@ Choose your repo and set:
 
 Streamlit Cloud → “Manage app” → “Secrets”
 
-`   GOOGLE_API_KEY = "your key here"   `
+`GOOGLE_API_KEY = "your key here"`
 
 Save → App auto-restarts.
 
@@ -95,7 +99,7 @@ Your app will be **live, stable, fast**, and **Gemini-powered**.
 --------------------
 
 You must have these 4 files in your repo root:
-`   requirements.txt   `
+`requirements.txt`
 
 You **must NOT** commit .env.Instead, you will set your API key inside Streamlit Cloud.
 
@@ -103,10 +107,16 @@ You **must NOT** commit .env.Instead, you will set your API key inside Streamlit
 ============================================
 
 In VSCode terminal:
-`   git add .  git commit -m "final spendwise app"  git push origin main   `
+`
+git add .  
+git commit -m "final spendwise app"  
+git push origin main
+`
 
 If you see “no upstream branch” error:
-`   git push --set-upstream origin main   `
+`
+git push --set-upstream origin main
+`
 
 Done.
 
@@ -154,11 +164,23 @@ Save → The app restarts automatically.
 
 Your requirements.txt must include:
 
-`   streamlit  pandas  numpy  plotly  python-dotenv  google-generativeai  transformers  torch  requests  regex   `
+`
+streamlit  
+pandas  
+numpy  
+plotly  
+python-dotenv  
+google-generativeai  
+transformers  
+torch  
+requests  
+regex
+`
 
 If you don’t need HuggingFace:
 
 ❗ remove transformers + torch to make deployment faster.
 
 ==============================================================
+
 
