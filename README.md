@@ -59,9 +59,11 @@ AI responds with actionable, supportive financial coaching.
 ### **1\. Push to GitHub**
 
 `
-git add .  
-git commit -m "final version"  
+
+git add .
+git commit -m "final version"
 git push
+
 `
 
 ### **2\. Go to Streamlit Cloud → New App**
@@ -182,5 +184,6 @@ If you don’t need HuggingFace:
 ❗ remove transformers + torch to make deployment faster.
 
 ==============================================================
+
 
 
