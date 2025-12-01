@@ -13,14 +13,14 @@ df = load_transactions()
 
 # Ensure Posting Date is datetime
 df["Posting Date"] = pd.to_datetime(df["Posting Date"], errors="coerce")
-df = df.dropna(subset=["Posting Date"])  # clean any broken rows
+df = df.dropna(subset=["Posting Date"])  # remove invalid rows
 
-# Clean Amount Column
-# Negative → expense → convert to positive
-# Positive → income → ignore (0)
+# Clean Amount Column:
+#   negative numbers → spending (convert to positive)
+#   positive numbers → income (treated as 0 for budgeting)
 df["CleanAmount"] = df["Amount"].apply(lambda x: abs(x) if x < 0 else 0)
 
-# Month column
+# Add Month column
 df["Month"] = df["Posting Date"].dt.to_period("M").astype(str)
 
 # -------------------------
@@ -31,7 +31,7 @@ st.subheader("Select a month to plan:")
 all_months = sorted(df["Month"].unique())
 month = st.selectbox("", all_months)
 
-# Filter for selected month
+# Filter data for month
 month_df = df[df["Month"] == month]
 
 st.write(f"### Budget for **{month}**")
@@ -41,18 +41,17 @@ st.write(f"### Budget for **{month}**")
 # -------------------------
 categories = sorted(df["Category"].unique())
 
-# Initialize session_state for budgets
 if "budgets" not in st.session_state:
     st.session_state.budgets = {}
 
-# Default = $300 per category
+# Start month with $300 per category default
 if month not in st.session_state.budgets:
     st.session_state.budgets[month] = {cat: 300 for cat in categories}
 
 st.subheader("💵 Set Your Budgets")
 
 # -------------------------
-# Budget Inputs
+# Budget Input Section
 # -------------------------
 updated_budgets = {}
 
@@ -69,7 +68,7 @@ for cat in categories:
 
     updated_budgets[cat] = float(updated_value)
 
-# Save budgets
+# Save updated values
 st.session_state.budgets[month] = updated_budgets
 
 # -------------------------
@@ -86,28 +85,30 @@ summary = (
 summary["Budget"] = summary["Category"].map(st.session_state.budgets[month])
 summary["Budget"].fillna(0, inplace=True)
 
-# Add categories with budgets but no spending
+# Add missing categories with budget but no spending
 for cat, b in st.session_state.budgets[month].items():
     if cat not in summary["Category"].values:
         summary.loc[len(summary)] = [cat, 0, b]
 
-# Status Logic
-def status_logic(r):
-    if r["Budget"] == 0:
+# Status logic
+def get_status(row):
+    if row["Budget"] == 0:
         return "Good"
-    pct = (r["Spent"] / r["Budget"]) * 100
-    if pct > 100: return "Over"
-    if pct > 80: return "Near"
+    pct = (row["Spent"] / row["Budget"]) * 100
+    if pct > 100:
+        return "Over"
+    if pct > 80:
+        return "Near"
     return "Good"
 
-summary["Status"] = summary.apply(status_logic, axis=1)
+summary["Status"] = summary.apply(get_status, axis=1)
 summary = summary.sort_values("Category")
 
 st.markdown("### 📋 Budget Overview")
 st.dataframe(summary, hide_index=True)
 
 # -------------------------
-# Plot: Spending vs Budget
+# Spending vs Budget Chart
 # -------------------------
 st.subheader(f"📊 Spending vs Budget — {month}")
 
@@ -119,8 +120,8 @@ chart_df = summary.melt(
 )
 
 color_map = {
-    "Spent": "rgba(135, 206, 250, 0.85)",  # blue
-    "Budget": "rgba(255, 255, 255, 0.35)"  # light white
+    "Spent": "rgba(135, 206, 250, 0.85)",  # soft blue
+    "Budget": "rgba(255, 255, 255, 0.35)"  # muted white
 }
 
 fig = px.bar(
@@ -139,9 +140,7 @@ fig.update_layout(
     title_font=dict(size=26),
     xaxis_title="Category",
     yaxis_title="Amount ($)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    paper_bgcolor="rgba(0,0,0,0)",
-    bargap=0.30,
+    bargap=0.3,
     legend_title=None,
 )
 

@@ -1,94 +1,77 @@
 import streamlit as st
-from transformers import pipeline
+from textblob import TextBlob
 from utils.loader import load_transactions
 import pandas as pd
 
 st.set_page_config(page_title="Sentiment Analysis", layout="wide")
 
-# -----------------------------
-# Load HuggingFace model once
-# -----------------------------
-@st.cache_resource
-def load_model():
-    return pipeline("sentiment-analysis")
-
-model = load_model()
+st.title("💭 Sentiment Analysis")
 
 # -----------------------------
-# UI
+# 1) Free text sentiment
 # -----------------------------
-st.title("💭 Sentiment Analysis (HuggingFace)")
+st.subheader("📝 Enter text to analyze:")
 
-st.subheader("📝 Enter text to analyze sentiment:")
-text = st.text_area("Type something...", height=150)
+text = st.text_area("Type something about your spending...",
+                    height=150,
+                    placeholder="Example: I feel like I’ve been overspending on coffee lately.")
 
-# -----------------------------
-# Analyze single text input
-# -----------------------------
-if st.button("Analyze"):
+def label(score: float) -> str:
+    if score > 0.3:
+        return "Positive 😊"
+    elif score < -0.3:
+        return "Negative 😞"
+    return "Neutral 😐"
+
+if st.button("Analyze Text"):
     if text.strip():
-        result = model(text)[0]
-        label = result["label"]
-        score = result["score"]
-
-        emoji = "😊" if label == "POSITIVE" else "😞"
-
-        st.success(f"**Sentiment:** {label} {emoji}")
-        st.write(f"Confidence: `{score:.3f}`")
-
+        blob = TextBlob(text)
+        score = blob.sentiment.polarity
+        st.success(f"**Sentiment:** {label(score)} (polarity = `{score:.3f}`)")
     else:
-        st.warning("Please enter text.")
+        st.warning("Please type something first.")
 
 st.markdown("---")
 
 # -----------------------------
-# Sentiment for transaction descriptions
+# 2) Sentiment for transactions
 # -----------------------------
 st.subheader("📦 Sentiment for Transaction Descriptions")
 
 df = load_transactions()
+df["Posting Date"] = pd.to_datetime(df["Posting Date"], errors="coerce")
+df = df.dropna(subset=["Posting Date"])
 
-# Add sentiment using model
-@st.cache_data
-def add_sentiment(df):
-    sentiments = []
-    scores = []
-    for text in df["Description"].astype(str):
-        res = model(text)[0]
-        sentiments.append(res["label"])
-        scores.append(res["score"])
-    df["Sentiment"] = sentiments
-    df["Sentiment Score"] = scores
-    return df
+# compute polarity on Description
+df["Sentiment Score"] = df["Description"].astype(str).apply(
+    lambda t: TextBlob(t).sentiment.polarity
+)
+df["Sentiment Label"] = df["Sentiment Score"].apply(label)
 
-df = add_sentiment(df)
-
-# -----------------------------
-# Filters (date & row count)
-# -----------------------------
-st.write("### 🔎 Filter Transactions")
-
+# ---- Filters ----
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    start_date = st.date_input("From:", df["Posting Date"].min())
+    start_date = st.date_input("From", df["Posting Date"].min().date())
 
 with col2:
-    end_date = st.date_input("To:", df["Posting Date"].max())
+    end_date = st.date_input("To", df["Posting Date"].max().date())
 
 with col3:
-    limit = st.number_input("Show last N rows:", min_value=5, max_value=200, value=20)
+    limit = st.number_input("Show last N rows", min_value=5, max_value=200, value=20)
 
-# Filter by date range
-df["Posting Date"] = pd.to_datetime(df["Posting Date"], errors="coerce")
-filtered = df[
-    (df["Posting Date"] >= pd.Timestamp(start_date)) &
-    (df["Posting Date"] <= pd.Timestamp(end_date))
-]
+mask = (
+    (df["Posting Date"].dt.date >= start_date)
+    & (df["Posting Date"].dt.date <= end_date)
+)
+filtered = df[mask].copy()
+filtered["Amount"] = filtered["Amount"].astype(float).round(2)
 
-# Show limited rows
+st.write(f"Showing last **{limit}** transactions in this period:")
+
 st.dataframe(
-    filtered[["Posting Date", "Description", "Amount", "Sentiment", "Sentiment Score"]]
-        .sort_values("Posting Date", ascending=False)
-        .head(limit)
+    filtered[["Posting Date", "Description", "Amount", "Sentiment Label", "Sentiment Score"]]
+    .sort_values("Posting Date", ascending=False)
+    .head(limit),
+    hide_index=True,
 )

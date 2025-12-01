@@ -11,6 +11,7 @@ st.title("📊 Spending Breakdown")
 # =============================
 df = load_transactions()
 df["Posting Date"] = pd.to_datetime(df["Posting Date"], errors="coerce")
+df = df.dropna(subset=["Posting Date"])
 
 # =============================
 # Date Filters
@@ -39,21 +40,18 @@ st.write(f"Total transactions: **{len(filtered_df)}**")
 # 0️⃣ CLEAN COLUMNS
 # =========================================================
 
-# Remove time from Posting Date
+# Remove time from date
 filtered_df["Posting Date"] = filtered_df["Posting Date"].dt.date
 
-# Format Amount (keep numeric + formatted version)
-# FORMAT Amount + Balance (remove .00000 but keep them numeric underneath)
+# Format numeric values
 filtered_df["Amount"] = filtered_df["Amount"].astype(float).round(2)
 filtered_df["Balance"] = filtered_df["Balance"].astype(float).round(2)
 
-# For display only (avoid breaking charts or grouping)
 filtered_df["Amount_str"] = filtered_df["Amount"].map("{:.2f}".format)
 filtered_df["Balance_str"] = filtered_df["Balance"].map("{:.2f}".format)
 
-
-# Positive value for spending bucket logic
-filtered_df["SpendPos"] = filtered_df["Amount"].abs()
+# Create clean spending metric
+filtered_df["SpendPos"] = filtered_df["Amount"].apply(lambda x: abs(x) if x < 0 else 0)
 
 # =========================================================
 # UNIFIED BUCKET COLUMN
@@ -80,21 +78,23 @@ filtered_df["Bucket"] = filtered_df.apply(
 # =============================
 # 1️⃣ Spending Over Time Chart
 # =============================
+
 st.markdown("### 📈 Spending Over Time")
 
 daily = (
     filtered_df.copy()
-    .set_index(pd.to_datetime(filtered_df["Posting Date"]))
-    .resample("D")["Amount"]
+    .assign(Date=pd.to_datetime(filtered_df["Posting Date"]))
+    .set_index("Date")
+    .resample("D")["SpendPos"]
     .sum()
     .reset_index()
 )
 
 fig = px.line(
     daily,
-    x="Posting Date",
-    y="Amount",
-    title="Daily Spending Trend",
+    x="Date",
+    y="SpendPos",
+    title="Daily Spending Trend (Only Expenses)",
     markers=True,
 )
 
@@ -103,13 +103,13 @@ fig.update_layout(template="plotly_dark")
 
 st.plotly_chart(fig, use_container_width=True)
 
+
 # =========================================================
 # 2️⃣ WEEKDAY SPENDING HEATMAP
 # =========================================================
 st.subheader("📅 Weekly Spending Heatmap")
 
 filtered_df["Weekday"] = pd.to_datetime(filtered_df["Posting Date"]).dt.day_name()
-
 
 weekday_order = [
     "Monday", "Tuesday", "Wednesday",
@@ -137,22 +137,17 @@ st.plotly_chart(fig1, use_container_width=True)
 st.write("### Weekday Summary")
 st.dataframe(weekday_summary.rename(columns={"SpendPos": "Spending"}), hide_index=True)
 
+
 # =========================================================
-# 3️⃣ SPENDING BUCKETS (Only DEBIT spending, always positive)
+# 3️⃣ SPENDING BUCKETS (Only DEBIT)
 # =========================================================
 
 st.subheader("💵 Spending Buckets")
 
-# Only debit = actual spending
 spend_df = filtered_df[filtered_df["Details"] == "DEBIT"].copy()
-
-# Always use positive values for spending calculations
 spend_df["SpendPos"] = spend_df["Amount"].abs()
-
-# Assign buckets again to avoid missing updates
 spend_df["Bucket"] = spend_df["SpendPos"].apply(lambda x: bucketize(x, "DEBIT"))
 
-# Group totals
 bucket_summary = (
     spend_df.groupby("Bucket")["SpendPos"]
     .sum()
@@ -160,7 +155,6 @@ bucket_summary = (
     .rename(columns={"SpendPos": "Total Spend"})
 )
 
-# Ensure correct order
 bucket_order = [
     "Micro (<$10)",
     "Small ($10–$30)",
@@ -172,7 +166,6 @@ bucket_order = [
 bucket_summary["Bucket"] = pd.Categorical(bucket_summary["Bucket"], bucket_order)
 bucket_summary = bucket_summary.sort_values("Bucket")
 
-# Better gradient blues
 colors = ["#e2ecff", "#bcd4ff", "#8bb8ff", "#5e91ff", "#2f63ff"]
 
 fig2 = px.bar(
@@ -192,12 +185,12 @@ fig2.update_layout(
 )
 
 st.plotly_chart(fig2, use_container_width=True)
-st.write("### Bucket Breakdown")
 st.dataframe(bucket_summary, hide_index=True)
 
-# =============================
+
+# =========================================================
 # 4️⃣ Detailed Table (Bucket colored)
-# =============================
+# =========================================================
 
 st.markdown("### 🧾 Detailed Transactions")
 
@@ -210,7 +203,6 @@ table_df = filtered_df[
     "Balance_str": "Balance"
 })
 
-# ----- Color map for buckets -----
 bucket_colors = {
     "Income": "#b3e6b3",
     "Micro (<$10)": "#e0ecff",
